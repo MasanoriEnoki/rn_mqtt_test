@@ -16,6 +16,7 @@ import {
   View,
   Text,
   StatusBar,
+  Button
 } from 'react-native';
 
 import {
@@ -26,64 +27,42 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-// import init from 'react_native_mqtt';
-// import AsyncStorage from '@react-native-community/async-storage';
+import init from 'react_native_mqtt';
+import AsyncStorage from '@react-native-community/async-storage';
 
-// init({
-//   size: 10000,
-//   storageBackend: AsyncStorage,
-//   defaultExpires: 1000 * 3600 * 24,
-//   enableCache: true,
-//   reconnect: true,
-//   sync : {
-//   }
-// });
+const onMqttButtonPressed = () => {
+  init({
+    size: 10000,
+    storageBackend: AsyncStorage,
+    defaultExpires: 1000 * 3600 * 24,
+    enableCache: true,
+    reconnect: true,
+    sync : {
+    }
+  });
 
-// function onConnect() {
-//   console.log("onConnect");
-// }
 
-// function onConnectionLost(responseObject) {
-//   if (responseObject.errorCode !== 0) {
-//     console.log("onConnectionLost:"+responseObject.errorMessage);
-//   }
-// }
+function onConnect() {
+  console.log("onConnect");
+}
 
-// function onMessageArrived(message) {
-//   console.log("onMessageArrived:"+message.payloadString);
-// }
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:"+responseObject.errorMessage);
+  }
+}
 
-// const client = new Paho.MQTT.Client('iot.eclipse.org', 443, 'uname');
-// client.onConnectionLost = onConnectionLost;
-// client.onMessageArrived = onMessageArrived;
-// client.connect({ onSuccess:onConnect, useSSL: true });
-// size: 10000,
-// storageBackend: AsyncStorage,
-// defaultExpires: 1000 * 3600 * 24,
-// enableCache: true,
-// reconnect: true,
-// sync : {
-// }
-// });
+function onMessageArrived(message) {
+  console.log("onMessageArrived:"+message.payloadString);
+}
 
-// function onConnect() {
-// console.log("onConnect");
-// }
+  console.warn("before client")
 
-// function onConnectionLost(responseObject) {
-// if (responseObject.errorCode !== 0) {
-//   console.log("onConnectionLost:"+responseObject.errorMessage);
-// }
-// }
-
-// function onMessageArrived(message) {
-// console.log("onMessageArrived:"+message.payloadString);
-// }
-
-// const client = new Paho.MQTT.Client('iot.eclipse.org', 443, 'uname');
-// client.onConnectionLost = onConnectionLost;
-// client.onMessageArrived = onMessageArrived;
-// client.connect({ onSuccess:onConnect, useSSL: true });
+  const client = new Paho.MQTT.Client('test.mosquitto.org', 8081, 'enoki');
+  client.onConnectionLost = onConnectionLost;
+  client.onMessageArrived = onMessageArrived;
+  client.connect({ onSuccess:onConnect, useSSL: true, onFailure: (m) => console.log("failed", m) });
+}
 
 const App: () => React$Node = () => {
   return (
@@ -93,6 +72,7 @@ const App: () => React$Node = () => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
+            <Button title="Connect to mqtt" onPress={onMqttButtonPressed}/>
           <Header />
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
