@@ -60,6 +60,7 @@ const App: () => React$Node = () => {
       if (responseObject.errorCode !== 0) {
         console.log("onConnectionLost:"+responseObject.errorMessage);
         setStatusText("onConnectionLost:"+responseObject.errorMessage);
+        setStatusSubText("no subscribe")
       }
     }
     
@@ -70,7 +71,7 @@ const App: () => React$Node = () => {
     
       console.warn("before client")
     
-      client = new Paho.MQTT.Client('mqtt.devwarp.work', 443, 'enoki');
+      client = new Paho.MQTT.Client('test.mosquitto.org', 8081, 'enoki');
       client.onConnectionLost = onConnectionLost;
       client.onMessageArrived = onMessageArrived;
       client.connect({ onSuccess:onConnect, useSSL: true, onFailure: (m) => console.log("failed", m) });
