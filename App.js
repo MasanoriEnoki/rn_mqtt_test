@@ -16,7 +16,7 @@ import {
   View,
   Text,
   StatusBar,
-  Button
+  Button,
 } from 'react-native';
 
 import {
@@ -29,6 +29,8 @@ import {
 
 import init from 'react_native_mqtt';
 import AsyncStorage from '@react-native-community/async-storage';
+
+let client = {}
 
 const onMqttButtonPressed = () => {
   init({
@@ -44,6 +46,7 @@ const onMqttButtonPressed = () => {
 
 function onConnect() {
   console.log("onConnect");
+
 }
 
 function onConnectionLost(responseObject) {
@@ -58,10 +61,18 @@ function onMessageArrived(message) {
 
   console.warn("before client")
 
-  const client = new Paho.MQTT.Client('test.mosquitto.org', 8081, 'enoki');
+  client = new Paho.MQTT.Client('mqtt.devwarp.work', 443, 'enoki');
   client.onConnectionLost = onConnectionLost;
   client.onMessageArrived = onMessageArrived;
   client.connect({ onSuccess:onConnect, useSSL: true, onFailure: (m) => console.log("failed", m) });
+}
+
+const onSendButtonPressed = () => {
+    console.log("sending...");
+    var message = new Paho.MQTT.Message("Hello");
+    message.destinationName = "/World";
+    client.send(message);
+    console.log(message)
 }
 
 const App: () => React$Node = () => {
@@ -73,6 +84,8 @@ const App: () => React$Node = () => {
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
             <Button title="Connect to mqtt" onPress={onMqttButtonPressed}/>
+            <View><Text>AAAAAAa</Text></View>
+            <Button title="Send Message" onPress={onSendButtonPressed}/>
           <Header />
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
