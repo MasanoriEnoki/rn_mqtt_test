@@ -38,6 +38,7 @@ const App: () => React$Node = () => {
   const [statusSubText, setStatusSubText] = useState("no subscribe")
   const [value, onChangeText] = useState('value')
   const [arrivedMessage, setArrivedMessage] = useState('No message')
+  const [topic, setTopic] = useState('/World')
   
   const onMqttButtonPressed = () => {
     init({
@@ -78,12 +79,13 @@ const App: () => React$Node = () => {
     const onSendButtonPressed = () => {
         console.log("sending...");
         var message = new Paho.MQTT.Message(value);
-        message.destinationName = "/World";
+        message.destinationName = topic;
         client.send(message);
       }
       
     const onSubscribeButtonPressed = () => {
-      client.subscribe('/World')
+      client.subscribe(topic)
+      setStatusSubText('subscribe')
     }
 
 
@@ -97,14 +99,21 @@ const App: () => React$Node = () => {
             <Text>Connection Status : {statusText}</Text>
             <Text>Subscribe Status : {statusSubText}</Text>
             <Button title="Connect to mqtt" onPress={onMqttButtonPressed}/>
+            <Text>Topic Name</Text>
+            <TextInput
+              style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+              onChangeText={text => onChangeText(text)}
+              value={topic}
+            />
+            <Text>Message</Text>
             <TextInput
               style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
               onChangeText={text => onChangeText(text)}
               value={value}
             />
-            <Button title="Send Message" onPress={onSendButtonPressed}/>
+            <Button title="Send Message" onPress={onSendButtonPressed} disabled={statusText !== "onConnect"}/>
             <View><Text>***</Text></View>
-            <Button title="Subscribe" onPress={onSubscribeButtonPressed}/>
+            <Button title="Subscribe" onPress={onSubscribeButtonPressed} disabled={statusText !== "onConnect"}/>
           <Text>{arrivedMessage}</Text>
         </ScrollView>
       </SafeAreaView>
@@ -126,28 +135,6 @@ const styles = StyleSheet.create({
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
   },
 });
 
