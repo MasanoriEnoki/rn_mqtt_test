@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 
 import {
   // AsyncStorage,
@@ -17,6 +17,7 @@ import {
   Text,
   StatusBar,
   Button,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -32,53 +33,60 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 let client = {}
 
-const onMqttButtonPressed = () => {
-  init({
-    size: 10000,
-    storageBackend: AsyncStorage,
-    defaultExpires: 1000 * 3600 * 24,
-    enableCache: true,
-    reconnect: true,
-    sync : {
-    }
-  });
-
-
-function onConnect() {
-  console.log("onConnect");
-}
-
-function onConnectionLost(responseObject) {
-  if (responseObject.errorCode !== 0) {
-    console.log("onConnectionLost:"+responseObject.errorMessage);
-  }
-}
-
-function onMessageArrived(message) {
-  console.log("onMessageArrived:"+message.payloadString);
-}
-
-  console.warn("before client")
-
-  client = new Paho.MQTT.Client('mqtt.devwarp.work', 443, 'enoki');
-  client.onConnectionLost = onConnectionLost;
-  client.onMessageArrived = onMessageArrived;
-  client.connect({ onSuccess:onConnect, useSSL: true, onFailure: (m) => console.log("failed", m) });
-}
-
-const onSendButtonPressed = () => {
-    console.log("sending...");
-    var message = new Paho.MQTT.Message("Hello");
-    message.destinationName = "/World";
-    client.send(message);
-    console.log(message)
-}
-
-const onSubscribeButtonPressed = () => {
-  client.subscribe('/World')
-}
-
 const App: () => React$Node = () => {
+  const [statusText, setStatusText] = useState("disconnect")
+  const [statusSubText, setStatusSubText] = useState("no subscribe")
+  const [value, onChangeText] = useState('value')
+  const [arrivedMessage, setArrivedMessage] = useState('No message')
+  
+  const onMqttButtonPressed = () => {
+    init({
+      size: 10000,
+      storageBackend: AsyncStorage,
+      defaultExpires: 1000 * 3600 * 24,
+      enableCache: true,
+      reconnect: true,
+      sync : {
+      }
+    });
+    
+    function onConnect() {
+      console.log("onConnect");
+      setStatusText("onConnect");
+    }
+    
+    function onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        console.log("onConnectionLost:"+responseObject.errorMessage);
+        setStatusText("onConnectionLost:"+responseObject.errorMessage);
+      }
+    }
+    
+    function onMessageArrived(message) {
+      console.log("onMessageArrived:"+message.payloadString);
+      setArrivedMessage(message.payloadString);
+    }
+    
+      console.warn("before client")
+    
+      client = new Paho.MQTT.Client('mqtt.devwarp.work', 443, 'enoki');
+      client.onConnectionLost = onConnectionLost;
+      client.onMessageArrived = onMessageArrived;
+      client.connect({ onSuccess:onConnect, useSSL: true, onFailure: (m) => console.log("failed", m) });
+    }
+    
+    const onSendButtonPressed = () => {
+        console.log("sending...");
+        var message = new Paho.MQTT.Message(value);
+        message.destinationName = "/World";
+        client.send(message);
+      }
+      
+    const onSubscribeButtonPressed = () => {
+      client.subscribe('/World')
+    }
+
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -86,45 +94,18 @@ const App: () => React$Node = () => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
+            <Text>Connection Status : {statusText}</Text>
+            <Text>Subscribe Status : {statusSubText}</Text>
             <Button title="Connect to mqtt" onPress={onMqttButtonPressed}/>
-            <View><Text>AAAAAAa</Text></View>
+            <TextInput
+              style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+              onChangeText={text => onChangeText(text)}
+              value={value}
+            />
             <Button title="Send Message" onPress={onSendButtonPressed}/>
-            <View><Text>AAAAAAa</Text></View>
+            <View><Text>***</Text></View>
             <Button title="Subscribe" onPress={onSubscribeButtonPressed}/>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
+          <Text>{arrivedMessage}</Text>
         </ScrollView>
       </SafeAreaView>
     </>
