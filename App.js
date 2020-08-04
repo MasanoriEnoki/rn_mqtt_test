@@ -46,7 +46,6 @@ const onMqttButtonPressed = () => {
 
 function onConnect() {
   console.log("onConnect");
-
 }
 
 function onConnectionLost(responseObject) {
@@ -75,6 +74,10 @@ const onSendButtonPressed = () => {
     console.log(message)
 }
 
+const onSubscribeButtonPressed = () => {
+  client.subscribe('/World')
+}
+
 const App: () => React$Node = () => {
   return (
     <>
@@ -86,6 +89,8 @@ const App: () => React$Node = () => {
             <Button title="Connect to mqtt" onPress={onMqttButtonPressed}/>
             <View><Text>AAAAAAa</Text></View>
             <Button title="Send Message" onPress={onSendButtonPressed}/>
+            <View><Text>AAAAAAa</Text></View>
+            <Button title="Subscribe" onPress={onSubscribeButtonPressed}/>
           <Header />
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
